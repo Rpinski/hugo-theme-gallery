@@ -13,6 +13,6 @@ if (el && header) {
 
 window.onload = function() {
   window.onscroll = function() {
-      header.classList.toggle("scrolled", window.scrollY > 32);
+      header.classList.toggle("scrolled", window.scrollY > 16);
   }
 }
