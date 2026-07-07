@@ -11,6 +11,21 @@
   display: none;
 }
 
+.pswp-caption-title,
+.pswp-caption-meta {
+  display: block;
+}
+
+.pswp-caption-title {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.pswp-caption-meta {
+  margin-top: 0.25rem;
+  color: rgba(255,255,255,0.8);
+}
+
 .pswp__dynamic-caption a {
   color: #fff;
 }
