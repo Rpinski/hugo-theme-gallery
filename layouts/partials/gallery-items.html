@@ -1,0 +1,87 @@
+{{ $items := slice }}
+{{ $pageResources := .Resources.ByType "image" }}
+
+{{ if gt (len $pageResources) 0 }}
+  {{ range $image := $pageResources }}
+    {{ $title := "" }}
+    {{ $date := "" }}
+    {{ with $image.Exif }}
+      {{ $date = .Date }}
+      {{ with .Tags.ImageDescription }}
+        {{ $title = . }}
+      {{ end }}
+    {{ end }}
+    {{ if ne $image.Title $image.Name }}
+      {{ $title = $image.Title }}
+    {{ end }}
+    {{ if $image.Params.Date }}
+      {{ $date = time $image.Params.Date }}
+    {{ end }}
+    {{ $thumbnail := $image.Filter (slice images.AutoOrient (images.Process "fit 600x600")) }}
+    {{ $full := $image.Filter (slice images.AutoOrient (images.Process "fit 1600x1600")) }}
+    {{ $color := index $thumbnail.Colors 0 | default "transparent" }}
+    {{ $items = $items | append (dict
+      "Name" $image.Name
+      "Title" $title
+      "Date" $date
+      "Params" $image.Params
+      "Hidden" (eq $image.Params.hidden true)
+      "Cover" (eq $image.Params.cover true)
+      "OriginalURL" $image.RelPermalink
+      "ThumbnailURL" $thumbnail.RelPermalink
+      "ThumbnailWidth" $thumbnail.Width
+      "ThumbnailHeight" $thumbnail.Height
+      "FullURL" $full.RelPermalink
+      "Width" $full.Width
+      "Height" $full.Height
+      "Color" $color
+      "SourceType" "page"
+    ) }}
+  {{ end }}
+{{ else }}
+  {{ $externalBasePath := strings.TrimPrefix "/" (strings.TrimSuffix "/" (default "photos" site.Params.gallery.externalBasePath)) }}
+  {{ $sourceBasePath := strings.TrimSuffix "/" (default "static_photos/photos" site.Params.gallery.externalSourceDir) }}
+  {{ $galleryDir := "" }}
+  {{ with .File }}
+    {{ $galleryDir = trim .Dir "/" }}
+  {{ end }}
+  {{ $resources := or .Params.resources .Params.images }}
+  {{ range $resource := $resources }}
+    {{ $src := strings.TrimPrefix "/" (index $resource "src") }}
+    {{ $relativePath := $src }}
+    {{ if $galleryDir }}
+      {{ $relativePath = printf "%s/%s" $galleryDir $src }}
+    {{ end }}
+    {{ $localPath := printf "%s/%s" $sourceBasePath $relativePath }}
+    {{ if not (fileExists $localPath) }}
+      {{ errorf "external gallery image %q not found for page %q" $localPath $.RelPermalink }}
+    {{ end }}
+    {{ $config := imageConfig $localPath }}
+    {{ $params := default (dict) (index $resource "params") }}
+    {{ $title := default "" (index $resource "title") }}
+    {{ $date := "" }}
+    {{ with index $params "date" }}
+      {{ $date = time . }}
+    {{ end }}
+    {{ $url := relURL (printf "%s/%s" $externalBasePath $relativePath) }}
+    {{ $items = $items | append (dict
+      "Name" (path.Base $src)
+      "Title" $title
+      "Date" $date
+      "Params" $params
+      "Hidden" (eq (index $params "hidden") true)
+      "Cover" (eq (index $params "cover") true)
+      "OriginalURL" $url
+      "ThumbnailURL" $url
+      "ThumbnailWidth" $config.Width
+      "ThumbnailHeight" $config.Height
+      "FullURL" $url
+      "Width" $config.Width
+      "Height" $config.Height
+      "Color" "transparent"
+      "SourceType" "external"
+    ) }}
+  {{ end }}
+{{ end }}
+
+{{ return $items }}

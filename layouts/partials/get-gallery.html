@@ -1,14 +1,14 @@
 {{ $gallery := "" }}
-{{ $images :=  where (.Resources.ByType "image") "Params.hidden" "ne" true }}
+{{ $items := partial "gallery-items.html" . }}
+{{ $images := where $items "Hidden" "ne" true }}
 {{ if gt (len $images) 0 }}
-  {{ $covers := where (.Resources.ByType "image") "Params.cover" "eq" true }}
-  {{ $cover := "" }}
-  {{ if ge (len $covers) 0 }}
-    {{ $cover = index $covers 0 }}
-  {{ end }}
-  {{ $featured := $cover | default ((.Resources.ByType "image").GetMatch (.Params.featured_image | default "*feature*")) | default (index $images 0) }}
-  {{ $thumbnail := $featured.Filter (slice images.AutoOrient (images.Process "fit 600x600")) }}
-  {{ $color := index $thumbnail.Colors 0 | default "transparent" }}
+  {{ $featured := partial "gallery-featured-item.html" (dict "page" . "items" $items) }}
+  {{ $thumbnail := dict
+    "RelPermalink" $featured.ThumbnailURL
+    "Width" $featured.ThumbnailWidth
+    "Height" $featured.ThumbnailHeight
+  }}
+  {{ $color := $featured.Color | default "transparent" }}
   {{ $imageCount := 0 }}
   {{ $albumCount := 0 }}
   {{ if .IsPage }}
@@ -16,7 +16,7 @@
   {{ else }}
     {{ range where .RegularPagesRecursive "Params.private" "ne" true }}
       {{ $albumCount = add $albumCount 1 }}
-      {{ $imageCount = add $imageCount (len (where (.Resources.ByType "image") "Params.hidden" "ne" true)) }}
+      {{ $imageCount = add $imageCount (len (where (partial "gallery-items.html" .) "Hidden" "ne" true)) }}
     {{ end }}
   {{ end }}
   {{ $gallery = dict

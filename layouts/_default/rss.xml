@@ -36,19 +36,11 @@
       <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
       {{- with $authorEmail }}<author>{{ . }}{{ with $authorName }} ({{ . }}){{ end }}</author>{{ end }}
       <guid>{{ .Permalink }}</guid>
-      {{- $images := .Resources.ByType "image" -}}
-      {{- $index := 0 -}}
-      {{- range $i, $image := $images -}}
-        {{- if index $image.Params "cover" -}}
-          {{- $index = $i -}}
-        {{- end -}}
-      {{- end -}}
-      {{- $image := ($images.GetMatch (.Params.featured_image | default "*feature*")) | default (index $images $index) -}}
+      {{- $image := partial "gallery-featured-item.html" (dict "page" . "items" (partial "gallery-items.html" .)) -}}
       {{- if $image -}}
-        {{ $thumbnail := $image.Filter (slice images.AutoOrient (images.Process "fill 900x600")) }}
-        <media:content url="{{ $thumbnail.Permalink }}" type="image/jpeg"/>
+        <media:content url="{{ $image.FullURL | absURL }}" type="image/jpeg"/>
         <description>
-          &lt;img src=&quot;{{ $thumbnail.Permalink }}&quot; /&gt;
+          &lt;img src=&quot;{{ $image.FullURL | absURL }}&quot; /&gt;
           &lt;p&gt;{{ .Params.description | html }}&lt;/p&gt;
         </description>
       {{- else -}}

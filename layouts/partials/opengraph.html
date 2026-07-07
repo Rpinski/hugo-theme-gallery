@@ -32,15 +32,7 @@
   <meta property="og:type" content="website" />
 {{- end }}
 
-{{- $images := $.Resources.ByType "image" -}}
-{{ $index := 0 }}
-{{ range $i, $image := $images }}
-  {{ if index $image.Params "cover" }}
-    {{ $index = $i }}
-  {{ end }}
-{{ end }}
-{{ $image := ($images.GetMatch (.Params.featured_image | default "*feature*")) | default (index $images $index) }}
+{{- $image := partial "gallery-featured-item.html" (dict "page" . "items" (partial "gallery-items.html" .)) -}}
 {{- with $image -}}
-  {{ $full := $image.Filter (slice images.AutoOrient (images.Process "fit 1600x1600")) }}
-  <meta property="og:image" content="{{ $full.Permalink }}" />
+  <meta property="og:image" content="{{ .FullURL | absURL }}" />
 {{- end -}}
