@@ -41,6 +41,7 @@
 {{ else }}
   {{ $externalBasePath := strings.TrimPrefix "/" (strings.TrimSuffix "/" (default "photos" site.Params.gallery.externalBasePath)) }}
   {{ $sourceBasePath := strings.TrimSuffix "/" (default "static_photos/photos" site.Params.gallery.externalSourceDir) }}
+  {{ $resourceBaseDir := strings.Trim (default "" (index .Params "resource-base-dir")) "/" }}
   {{ $galleryDir := "" }}
   {{ with .File }}
     {{ $galleryDir = trim .Dir "/" }}
@@ -49,7 +50,9 @@
   {{ range $resource := $resources }}
     {{ $src := strings.TrimPrefix "/" (index $resource "src") }}
     {{ $relativePath := $src }}
-    {{ if $galleryDir }}
+    {{ if $resourceBaseDir }}
+      {{ $relativePath = printf "%s/%s" $resourceBaseDir $src }}
+    {{ else if $galleryDir }}
       {{ $relativePath = printf "%s/%s" $galleryDir $src }}
     {{ end }}
     {{ $localPath := printf "%s/%s" $sourceBasePath $relativePath }}
