@@ -7,16 +7,20 @@
       {{ if and (eq .SourceType "page") $publishResources }}
         {{ $href = .OriginalURL }}
       {{ end }}
+      {{ $model := index .Params "model" }}
       {{ $place := index .Params "place" }}
       {{ $time := index .Params "time" }}
       <a class="gallery-item" href="{{ $href }}" data-pswp-src="{{ .FullURL }}" data-pswp-width="{{ .Width }}" data-pswp-height="{{ .Height }}" data-pswp-target="{{ .Name | urlize }}" title="{{ .Title }}" itemscope itemtype="https://schema.org/ImageObject" style="aspect-ratio: {{ .ThumbnailWidth }} / {{ .ThumbnailHeight }}">
         <figure style="background-color: {{ .Color }}; aspect-ratio: {{ .ThumbnailWidth }} / {{ .ThumbnailHeight }}">
           <img class="lazyload" width="{{ .ThumbnailWidth }}" height="{{ .ThumbnailHeight }}" data-src="{{ .ThumbnailURL }}" alt="{{ .Title }}" />
         </figure>
-        {{ if or .Title $place $time }}
+        {{ if or .Title $model $place $time }}
           <div class="pswp-caption-content">
             {{ with .Title }}
               <div class="pswp-caption-title">{{ . }}</div>
+            {{ end }}
+            {{ with $model }}
+              <div class="pswp-caption-meta">{{ . }}</div>
             {{ end }}
             {{ with $place }}
               <div class="pswp-caption-meta">{{ . }}</div>
