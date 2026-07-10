@@ -39,58 +39,7 @@
     ) }}
   {{ end }}
 {{ else }}
-  {{ $externalBasePath := strings.TrimPrefix "/" (strings.TrimSuffix "/" (default "photos" site.Params.gallery.externalBasePath)) }}
-  {{ $sourceBasePath := strings.TrimSuffix "/" (default "static_photos/photos" site.Params.gallery.externalSourceDir) }}
-  {{ $resourceBaseDir := strings.Trim (default "" (index .Params "resource-base-dir")) "/" }}
-  {{ $galleryDir := "" }}
-  {{ with .File }}
-    {{ $galleryDir = trim .Dir "/" }}
-  {{ end }}
-  {{ $resources := or .Params.resources .Params.images }}
-  {{ range $resource := $resources }}
-    {{ $src := strings.TrimPrefix "/" (index $resource "src") }}
-    {{ $params := default (dict) (index $resource "params") }}
-    {{ $relativePath := $src }}
-    {{ if $resourceBaseDir }}
-      {{ $relativePath = printf "%s/%s" $resourceBaseDir $src }}
-    {{ else if $galleryDir }}
-      {{ $relativePath = printf "%s/%s" $galleryDir $src }}
-    {{ end }}
-    {{ $localPath := printf "%s/%s" $sourceBasePath $relativePath }}
-    {{ $width := int (default 0 (index $resource "width")) }}
-    {{ $height := int (default 0 (index $resource "height")) }}
-    {{ if or (eq $width 0) (eq $height 0) }}
-      {{ if not (fileExists $localPath) }}
-        {{ errorf "external gallery image %q not found for page %q" $localPath $.RelPermalink }}
-      {{ end }}
-      {{ $config := imageConfig $localPath }}
-      {{ $width = $config.Width }}
-      {{ $height = $config.Height }}
-    {{ end }}
-    {{ $title := default "" (index $resource "title") }}
-    {{ $date := "" }}
-    {{ with index $params "date" }}
-      {{ $date = time . }}
-    {{ end }}
-    {{ $url := relURL (printf "%s/%s" $externalBasePath $relativePath) }}
-    {{ $items = $items | append (dict
-      "Name" (path.Base $src)
-      "Title" $title
-      "Date" $date
-      "Params" $params
-      "Hidden" (eq (index $params "hidden") true)
-      "Cover" (eq (index $params "cover") true)
-      "OriginalURL" $url
-      "ThumbnailURL" $url
-      "ThumbnailWidth" $width
-      "ThumbnailHeight" $height
-      "FullURL" $url
-      "Width" $width
-      "Height" $height
-      "Color" "transparent"
-      "SourceType" "external"
-    ) }}
-  {{ end }}
+  {{ $items = partial "pp-gallery-items-external.html" . }}
 {{ end }}
 
 {{ return $items }}

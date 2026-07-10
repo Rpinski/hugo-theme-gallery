@@ -1,0 +1,32 @@
+{{ $images := .page.Resources.ByType "image" }}
+{{ $visibleImages := where $images "Params.hidden" "ne" true }}
+{{ $covers := where $images "Params.cover" "eq" true }}
+{{ $cover := "" }}
+
+{{ if gt (len $covers) 0 }}
+  {{ $cover = index $covers 0 }}
+{{ end }}
+
+{{ $featured := $cover | default ($images.GetMatch (.page.Params.featured_image | default "*feature*")) }}
+{{ if and (not $featured) (gt (len $visibleImages) 0) }}
+  {{ $featured = index $visibleImages 0 }}
+{{ end }}
+
+{{ if $featured }}
+  {{ $thumbnail := $featured.Filter (slice images.AutoOrient (images.Process "fit 600x600")) }}
+  {{ $full := $featured.Filter (slice images.AutoOrient (images.Process "fit 1600x1600")) }}
+  {{ $color := index $thumbnail.Colors 0 | default "transparent" }}
+  {{ return dict
+    "Name" $featured.Name
+    "Title" $featured.Title
+    "OriginalURL" $featured.RelPermalink
+    "ThumbnailURL" $thumbnail.RelPermalink
+    "ThumbnailWidth" $thumbnail.Width
+    "ThumbnailHeight" $thumbnail.Height
+    "FullURL" $full.RelPermalink
+    "Width" $full.Width
+    "Height" $full.Height
+    "Color" $color
+    "SourceType" "page"
+  }}
+{{ end }}
