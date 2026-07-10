@@ -6,6 +6,22 @@ import * as params from "@params";
 const gallery = document.getElementById("gallery");
 
 if (gallery) {
+  const injectShopLink = ({ captionElement }) => {
+    captionElement
+      .querySelectorAll(".pswp-caption-actions[data-shop-url]")
+      .forEach((container) => {
+        if (container.querySelector(".pswp-caption-action")) {
+          return;
+        }
+
+        const link = document.createElement("a");
+        link.className = "action-button pswp-caption-action";
+        link.href = container.dataset.shopUrl;
+        link.textContent = container.dataset.shopLabel || "Shop";
+        container.appendChild(link);
+      });
+  };
+
   const lightbox = new PhotoSwipeLightbox({
     gallery,
     children: ".gallery-item",
@@ -52,6 +68,10 @@ if (gallery) {
 
   lightbox.on("close", () => {
     history.replaceState("", document.title, window.location.pathname);
+  });
+
+  lightbox.on("init", () => {
+    lightbox.pswp.on("dynamicCaptionUpdateHTML", injectShopLink);
   });
 
   new PhotoSwipeDynamicCaption(lightbox, {
